@@ -13,11 +13,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@IdClass(FavoritePk.class)
 public class FavoritePk implements Serializable{
   @Column(name="user_email")
   private String userEmail;
-  @Column(name="board_numer")
+  @Column(name="board_number")
   private int boardNumber;
   
 }

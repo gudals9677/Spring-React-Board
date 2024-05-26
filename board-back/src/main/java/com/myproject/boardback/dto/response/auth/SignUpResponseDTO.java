@@ -1,12 +1,13 @@
 package com.myproject.boardback.dto.response.auth;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import com.myproject.boardback.common.ResponseCode;
 import com.myproject.boardback.common.ResponseMessage;
 import com.myproject.boardback.dto.response.ResponseDto;
+
+import lombok.Getter;
 
 @Getter
 public class SignUpResponseDTO extends ResponseDto{
