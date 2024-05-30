@@ -10,8 +10,6 @@ export default function Container() {
   //        state: 현재 페이지 path name 상태   //
 const {pathname} = useLocation();
 
-
-  //        redner: 레이아웃 렌더링       //
   return (
     <>
       <Header/>
