@@ -44,7 +44,6 @@ export default function Header() {
 
     //          state: 검색 버튼 요소 참조 상태        //
     const searchButtonRef = useRef<HTMLDivElement | null>(null);
-
     //          state: 검색 버튼 상태        //
     const [status, setStatus] = useState<boolean>(false);
     //          state: 검색어 상태        //
@@ -52,19 +51,17 @@ export default function Header() {
     //          state: 검색어 path variable 상태        //
     const {searchWord} = useParams();
 
-
     //          event handler: 검색어 변경 이벤트 처리 함수           //
     const onSearchWordChangeHandler = (event: ChangeEvent<HTMLInputElement>) =>{
       const value = event.target.value;
       setWord(value);
-    }
+    };
      //          event handler: 검색어 키 이벤트 처리 함수           //
      const onSearchWordKeyDownHandler = (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key !== 'Enter') return;
       if (!searchButtonRef.current) return;
       searchButtonRef.current.click();
      };
-
     //          event handler: 검색 버튼 클릭 이벤트 처리 함수           //
     const onSearchButtonClickHandler = () => {
       if(!status){
@@ -84,7 +81,11 @@ export default function Header() {
 
   if(!status) 
   //        render: 검색 버튼 컴포넌트 렌더링(클릭 false 상태)       //
-  return <div className='icon-button' onClick={onSearchButtonClickHandler}><div className='icon search-light-icon'></div></div>;
+  return (
+  <div className='icon-button' onClick={onSearchButtonClickHandler}>
+    <div className='icon search-light-icon'></div>
+  </div>
+  );
   //        render: 검색 버튼 컴포넌트 렌더링(클릭 true 상태)       //
   return (
     <div className='header-search-input-box'>
@@ -95,58 +96,58 @@ export default function Header() {
     </div>
   );
   };
-  //        component: 마이페이지 버튼 컴포넌트       //
+  //           component: 로그인 또는 마이페이지 버튼 컴포넌트         // 
   const MyPageButton = () => {
 
     //            state: userEmail path variable 상태          //
     const { userEmail} = useParams();
+    
 
-    //        event handler: 마이페이지 버튼 클릭 이벤트 처리 함수         //
-    const onMyPageButtonClickHandler = () => {
+     //        event handler: 마이페이지 버튼 클릭 이벤트 처리 함수         //
+     const onMyPageButtonClickHandler = () => {
       if (!loginUser) return;
       const {email} = loginUser;
-      navigate(USER_PATH(''));
+      navigate(USER_PATH(email));
     };
-    //        event handler: 마이페이지 버튼 클릭 이벤트 처리 함수         //
+    //        event handler: 로그아웃 클릭 이벤트 처리 함수         //
     const onSignOutButtonClickHandler = () => {
       resetLoginUser();
+      setCookie('accessToken', '', { path: MAIN_PATH(), expires: new Date() });
       navigate(MAIN_PATH());
     };
-    //        event handler: 마이페이지 버튼 클릭 이벤트 처리 함수         //
+    //        event handler: 로그인 버튼 클릭 이벤트 처리 함수         //
     const onSignInButtonClickHandler = () => {
       navigate(AUTH_PATH());
     };
+
     //        render: 로그아웃 버튼 컴포넌트 렌더링       //
     if (isLogin && userEmail === loginUser?.email)
-    return <div className='white-button' onClick={onSignOutButtonClickHandler}>{'로그아웃'}</div>;
+      return <div className='white-button' onClick={onSignOutButtonClickHandler}>{'로그아웃'}</div>;
     //        render: 마이페이지 버튼 컴포넌트 렌더링       //
     if (isLogin)
-    return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'마이페이지'}</div>;
-    
+      return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'마이페이지'}</div>; 
     //        render: 로그인 버튼 컴포넌트 렌더링       //
     return <div className='black-button' onClick={onSignInButtonClickHandler}>{'로그인'}</div>;
-  }
-   //        component: 마이페이지 버튼 컴포넌트       //
-   const UploadButton = () => {
+  };
+  //        component: 업로드 버튼 컴포넌트       //
+  const UploadButton = () => {
+      //         state: 게시물 상태            //
+      const {title, content, boardImageFileList, resetBoard} = useBoardStore();
 
-    //         state: 게시물 상태            //
-    const {title, content, boardImageFileList, resetBoard} = useBoardStore();
+      //        event handler: 업로드 버튼 클릭 이벤트 처리 함수         //
+      const onUploadButtonClickHandler = () => {
+
+      };
+
+      //        render: 업로드 버튼 컴포넌트 렌더링         //
+      if (title && content)
+      return <div className='black-button' onClick={onUploadButtonClickHandler}>{'업로드'}</div>;
+      //        render: 업로드 불가 버튼 컴포넌트 렌더링         //
+      return <div className='disable-button'>{'업로드'}</div>;
+  };
     
-    //        event handler: 업로드 버튼 클릭 이벤트 처리 함수         //
-    const onUploadButtonClickHandler = () => {
-
-    }
-    //        render: 업로드 버튼 컴포넌트 렌더링         //
-    if (title && content)
-    return <div className='black-button' onClick={onUploadButtonClickHandler}>{'업로드'}</div>;
-    //        render: 업로드 불가 버튼 컴포넌트 렌더링         //
-    return <div className='disable-button'>{'업로드'}</div>;
-   }
-
    //          effect: path가 변경될 때 마다 실행될 함수          //
    useEffect(() => {
-    
-  
   const isAuthPage = pathname.startsWith(AUTH_PATH());
   setAuthPage(isAuthPage);
   const isMainPage = pathname === MAIN_PATH();
@@ -162,6 +163,10 @@ export default function Header() {
   const isUserPage = pathname.startsWith(USER_PATH(''));
   setUserPage(isUserPage);
    }, [pathname]);
+   //          effect: login user 가 변경될 때 마다 실행될 함수          //
+   useEffect(() => {
+    setLogin(loginUser !== null);
+   }, [loginUser])
 
   //        render: 헤더 레이아웃 렌더링       //
   return (
@@ -181,4 +186,4 @@ export default function Header() {
       </div>
     </div>
   )
-}
+  }
