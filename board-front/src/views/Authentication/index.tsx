@@ -133,7 +133,7 @@ export default function Authentication() {
       </div>
     )
   }
-    //      component: SignUp card 컴포넌트         //
+    //      component: SignUp card 컴포넌트       //
   const SignUpCard = () => {
 
     //      state: 이메일 요소 참조 상태     //
