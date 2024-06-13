@@ -8,12 +8,14 @@ import org.springframework.stereotype.Service;
 
 import com.myproject.boardback.dto.request.board.PostBoardRequestDTO;
 import com.myproject.boardback.dto.response.ResponseDto;
+import com.myproject.boardback.dto.response.board.GetBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.PostBoardResponseDTO;
 import com.myproject.boardback.entity.BoardEntity;
 import com.myproject.boardback.entity.ImageEntity;
 import com.myproject.boardback.repository.BoardRepository;
 import com.myproject.boardback.repository.ImageRepository;
 import com.myproject.boardback.repository.UserRepository;
+import com.myproject.boardback.repository.resultSet.GetBoardResultSet;
 import com.myproject.boardback.service.BoardService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,30 @@ public class BoardServiceImplement implements BoardService {
   private final UserRepository userRepository;
   private final BoardRepository boardRepository;
   private final ImageRepository imageRepository;
+
+  
+  @Override
+  public ResponseEntity<? super GetBoardResponseDTO> getBoard(Integer boardNumber) {
+    
+    GetBoardResultSet resultSet = null;
+    List<ImageEntity> imageEntities = new ArrayList<>();
+    try {
+      resultSet = boardRepository.getBoard(boardNumber);
+      if(resultSet == null) return GetBoardResponseDTO.noExistBoard();
+      
+      imageEntities = imageRepository.findByBoardNumber(boardNumber);
+
+      BoardEntity boardEntity = boardRepository.findByBoardNumber(boardNumber);
+      boardEntity.increaseViewCount();
+      boardRepository.save(boardEntity);
+
+    } catch (Exception e){
+      e.printStackTrace();
+      return ResponseDto.databaseError();
+    }
+
+    return GetBoardResponseDTO.success(resultSet,imageEntities);
+  }
 
   @Override
   public ResponseEntity<? super PostBoardResponseDTO> postBoard(PostBoardRequestDTO dto, String email) {
@@ -60,6 +86,7 @@ public class BoardServiceImplement implements BoardService {
     
     return PostBoardResponseDTO.success();
   }
+
   
 
 }
