@@ -13,8 +13,8 @@ import { useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import { useLoginUserStore } from 'stores';
 import { getSignInUserReqeust } from 'apis';
-import { GetSignInUserResponseDTO } from 'apis/reponse/user';
-import { ResponseDto } from 'apis/reponse';
+import { GetSignInUserResponseDTO } from 'apis/response/user';
+import { ResponseDto } from 'apis/response';
 import { User } from 'types/interface';
 
 

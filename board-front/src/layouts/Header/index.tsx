@@ -7,8 +7,8 @@ import { useBoardStore, useLoginUserStore } from 'stores';
 import path from 'path';
 import { fileUploadRequest, postBoardRequest } from 'apis';
 import { PostBoardRequestDTO } from 'apis/request/board';
-import { PostBoardResponseDTO } from 'apis/reponse/board';
-import { ResponseDto } from 'apis/reponse';
+import { PostBoardResponseDTO } from 'apis/response/board';
+import { ResponseDto } from 'apis/response';
 
 //        component: 헤더 레이아웃        //
 export default function Header() {
