@@ -1,11 +1,16 @@
 package com.myproject.boardback.service.implement;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.myproject.boardback.dto.request.board.PatchBoardRequestDTO;
 import com.myproject.boardback.dto.request.board.PostBoardRequestDTO;
 import com.myproject.boardback.dto.request.board.PostCommentRequestDTO;
 import com.myproject.boardback.dto.response.ResponseDto;
@@ -13,14 +18,19 @@ import com.myproject.boardback.dto.response.board.DeleteBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.GetBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.GetCommentListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetFavoriteListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetLatestBoardListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetTop3BoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.IncreaseViewCountResponseDTO;
+import com.myproject.boardback.dto.response.board.PatchBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.PostBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.PostCommentResponseDTO;
 import com.myproject.boardback.dto.response.board.PutFavoriteResponseDTO;
 import com.myproject.boardback.entity.BoardEntity;
+import com.myproject.boardback.entity.BoardListViewEntity;
 import com.myproject.boardback.entity.CommentEntity;
 import com.myproject.boardback.entity.FavoriteEntity;
 import com.myproject.boardback.entity.ImageEntity;
+import com.myproject.boardback.repository.BoardListViewRepository;
 import com.myproject.boardback.repository.BoardRepository;
 import com.myproject.boardback.repository.CommentRepository;
 import com.myproject.boardback.repository.FavoriteRepository;
@@ -39,6 +49,7 @@ public class BoardServiceImplement implements BoardService {
 
   private final UserRepository userRepository;
   private final BoardRepository boardRepository;
+  private final BoardListViewRepository boardListViewRepository;
   private final ImageRepository imageRepository;
   private final FavoriteRepository favoriteRepository;
   private final CommentRepository commentRepository;
@@ -102,6 +113,38 @@ public class BoardServiceImplement implements BoardService {
     return GetCommentListResponseDTO.success(resultSets);
   }
 
+  @Override
+  public ResponseEntity<? super GetLatestBoardListResponseDTO> getLatestBoardList() {
+    List<BoardListViewEntity> boardListViewEntities = new ArrayList<>();
+
+    try {
+
+      boardListViewEntities = boardListViewRepository.findByOrderByWriteDatetimeDesc();
+    } catch(Exception e){
+      e.printStackTrace();
+      return ResponseDto.databaseError();
+    }
+    return GetLatestBoardListResponseDTO.success(boardListViewEntities);
+  }
+
+  @Override
+  public ResponseEntity<? super GetTop3BoardListResponseDTO> getTop3BoardList() {
+    List<BoardListViewEntity> boardListViewEntities = new ArrayList<>();
+    try {
+
+      Date beforeWeek = Date.from(Instant.now().minus(7,ChronoUnit.DAYS));
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      String sevenDaysAgo = simpleDateFormat.format(beforeWeek);
+
+      boardListViewEntities = boardListViewRepository.findTop3ByWriteDatetimeGreaterThanOrderByFavoriteCountDescCommentCountDescViewCountDescWriteDatetimeDesc(sevenDaysAgo);
+      
+    } catch(Exception e){
+      e.printStackTrace();
+      return ResponseDto.databaseError();
+    }
+    return GetTop3BoardListResponseDTO.success(boardListViewEntities);
+  }
+
   // 게시글 작성
   @Override
   public ResponseEntity<? super PostBoardResponseDTO> postBoard(PostBoardRequestDTO dto, String email) {
@@ -110,7 +153,7 @@ public class BoardServiceImplement implements BoardService {
 
       // user가 존재하는지 검증하고 Email조회
       boolean existedEmail = userRepository.existsByEmail(email);
-      if (!existedEmail) return PostBoardResponseDTO.notExistUser();
+      if (!existedEmail) return PostBoardResponseDTO.noExistUser();
 
       // 게시글 작성 메서드 엔티티에 정의
       BoardEntity boardEntity = new BoardEntity(dto, email);
@@ -196,6 +239,44 @@ public class BoardServiceImplement implements BoardService {
 
     return PutFavoriteResponseDTO.success();
   }
+
+  @Override
+  public ResponseEntity<? super PatchBoardResponseDTO> patchBoard(PatchBoardRequestDTO dto, Integer boardNumber,
+      String email) {
+
+        try {
+      
+          BoardEntity boardEntity = boardRepository.findByBoardNumber(boardNumber);
+          if (boardEntity == null) return PatchBoardResponseDTO.noExistBoard();
+
+          boolean existedUser = userRepository.existsByEmail(email);
+          if (existedUser) return PatchBoardResponseDTO.noExistUser();
+
+          String writerEmail = boardEntity.getWriterEmail();
+          boolean isWriter = writerEmail.equals(email);
+          if (!isWriter) return PatchBoardResponseDTO.noPermission();
+
+          boardEntity.patchBoard(dto);
+          boardRepository.save(boardEntity);
+
+          imageRepository.deleteByBoardNumber(boardNumber);
+          List<String> boardImageList = dto.getBoardImageList();
+          List<ImageEntity> imageEntities = new ArrayList<>();
+
+          for (String image: boardImageList) {
+            ImageEntity imageEntity = new ImageEntity(boardNumber, image);
+            imageEntities.add(imageEntity);
+          }
+
+          imageRepository.saveAll(imageEntities);
+
+        }catch(Exception e){
+          e.printStackTrace();
+          return ResponseDto.databaseError();
+        }
+        return PatchBoardResponseDTO.success();
+  }
+
   @Override
   public ResponseEntity<? super IncreaseViewCountResponseDTO> increaseViewCount(Integer boardNumber) {
     
@@ -239,5 +320,6 @@ public class BoardServiceImplement implements BoardService {
     }
     return DeleteBoardResponseDTO.success();
   }
+
 
 }

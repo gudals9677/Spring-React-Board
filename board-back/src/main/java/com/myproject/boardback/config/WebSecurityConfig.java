@@ -33,53 +33,49 @@ public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception{
-      httpSecurity
+    protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
             .cors(cors -> cors
-              .configurationSource(corsConfigrationSource())
+                .configurationSource(corsConfigurationSource())
             )
             .csrf(CsrfConfigurer::disable)
             .httpBasic(HttpBasicConfigurer::disable)
             .sessionManagement(sessionManagement -> sessionManagement
-              .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(request -> request
-              .requestMatchers("/","/api/v1/auth/**", "/api/v1/search/**", "/file/**").permitAll()
-              .requestMatchers(HttpMethod.GET, "/api/v1/board/**", "/api/v1/user/*").permitAll()
-              .anyRequest().authenticated()
+                .requestMatchers("/", "/api/v1/auth/**", "/api/v1/search/**", "/file/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/board/**", "/api/v1/user/*").permitAll()
+                .anyRequest().authenticated()
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
-              .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
+                .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
-  
+
     @Bean
-    protected CorsConfigurationSource corsConfigrationSource(){
+    protected CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
 
-      CorsConfiguration configuration = new CorsConfiguration();
-      configuration.addAllowedOrigin("*");
-      configuration.addAllowedMethod("*");
-      configuration.addAllowedHeader("*");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
 
-      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-      source.registerCorsConfiguration("/**", configuration);
-
-      return source;
+        return source;
     }
-}
 
-class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
-
-  @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
-      throws IOException, ServletException {
-    
-        response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("{ \"code\": \"AF\", \"message\": \"Authorization Failed\"}");
-  }
-  
+    private static class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
+        @Override
+        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+                throws IOException, ServletException {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{ \"code\": \"AF\", \"message\": \"Authorization Failed\"}");
+        }
+    }
 }

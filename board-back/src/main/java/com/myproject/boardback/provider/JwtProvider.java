@@ -55,9 +55,6 @@ public class JwtProvider {
       .parseClaimsJws(jwt)
       .getBody();
 
-      // 검증 시 시간 로그 출력
-      System.out.println("JWT Validated, Issued At: " + claims.getIssuedAt());
-      System.out.println("JWT Validated, Expires At: " + claims.getExpiration());
     }catch(Exception e){
       e.printStackTrace();
       return null;

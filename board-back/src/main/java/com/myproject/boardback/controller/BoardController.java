@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -11,13 +12,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.myproject.boardback.dto.request.board.PatchBoardRequestDTO;
 import com.myproject.boardback.dto.request.board.PostBoardRequestDTO;
 import com.myproject.boardback.dto.request.board.PostCommentRequestDTO;
 import com.myproject.boardback.dto.response.board.DeleteBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.GetBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.GetCommentListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetFavoriteListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetLatestBoardListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetTop3BoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.IncreaseViewCountResponseDTO;
+import com.myproject.boardback.dto.response.board.PatchBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.PostBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.PostCommentResponseDTO;
 import com.myproject.boardback.dto.response.board.PutFavoriteResponseDTO;
@@ -67,7 +72,19 @@ public class BoardController {
     ResponseEntity<? super IncreaseViewCountResponseDTO> response = boardService.increaseViewCount(boardNumber);
     return response;
   }
-  
+
+  // 최신 게시물 조회
+  @GetMapping("/latest-list")
+  public ResponseEntity<? super GetLatestBoardListResponseDTO> getLatestBoardList() {
+    ResponseEntity<? super GetLatestBoardListResponseDTO> response = boardService.getLatestBoardList();
+    return response;
+  }
+  // 주간 TOP3 게시물 리스트 조회
+  @GetMapping("/top-3")
+  public ResponseEntity<? super GetTop3BoardListResponseDTO> getTop3BoardList() {
+    ResponseEntity<? super GetTop3BoardListResponseDTO> response = boardService.getTop3BoardList();
+    return response;
+  }
 
   // 게시글 작성
   @PostMapping("")
@@ -100,6 +117,19 @@ public class BoardController {
         return response;
   }
 
+  // 게시글 수정
+  @PatchMapping("/{boardNumber}")
+  public ResponseEntity<? super PatchBoardResponseDTO> patchBoard(
+    @RequestBody @Valid PatchBoardRequestDTO requestBody,
+    @PathVariable("boardNumber") Integer boardNumber,
+    @AuthenticationPrincipal String email
+  ) {
+    ResponseEntity<? super PatchBoardResponseDTO> response = boardService.patchBoard(requestBody, boardNumber, email);
+    return response;
+
+  }
+
+  // 게시글 삭제
   @DeleteMapping("/{boardNumber}")
   public ResponseEntity<? super DeleteBoardResponseDTO> deleteBoard(
     @PathVariable("boardNumber") Integer boardNumber,
