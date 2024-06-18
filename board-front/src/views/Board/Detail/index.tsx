@@ -74,7 +74,7 @@ export default function BoardDetail() {
       const isWriter = loginUser.email === board.writerEmail;
       setWriter(isWriter);
     }
-    //         function: delete Board Response 처리 함수            //
+     //         function: delete Board Response 처리 함수            //
     const deleteBoardResponse = (responseBody: DeleteBoardResponseDTO | ResponseDto | null) => {
       if (!responseBody) return;
       const {code} = responseBody;
