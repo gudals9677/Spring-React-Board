@@ -1,5 +1,4 @@
-import { count } from "console";
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 const usePagination = <T>(countPerPage: number) => {
   //       state: 전체 객체 리스트 상태        //
@@ -19,10 +18,11 @@ const usePagination = <T>(countPerPage: number) => {
 
   //       function: 보여줄 객체 리스트 추출 함수         //
   const setView = () => {
-    const FIRST_INDEX = countPerPage * (currentPage -1);
+    const FIRST_INDEX = countPerPage * (currentPage - 1);
     const LAST_INDEX = totalList.length > countPerPage * currentPage ? countPerPage * currentPage : totalList.length;
-    const viewList = totalList.slice(FIRST_INDEX,  LAST_INDEX);
+    const viewList = totalList.slice(FIRST_INDEX, LAST_INDEX);
     setViewList(viewList);
+    console.log('Updated viewList:', viewList); // viewList 로그 추가
   }
 
   //       function: 보여줄 페이지 리스트 추출 함수         //
@@ -32,16 +32,15 @@ const usePagination = <T>(countPerPage: number) => {
     const viewPageList = totalPageList.slice(FIRST_INDEX, LAST_INDEX);
     setViewPageList(viewPageList);
   }
-  
 
   //       effect: total list가 변경될 때 마다 실행 할 작업        //
   useEffect(() => {
     const totalPage = Math.ceil(totalList.length / countPerPage);
-    const totalPageList = [];
+    const totalPageList: number[] = [];
     for (let page = 1; page <= totalPage; page++) totalPageList.push(page);
     setTotalPageList(totalPageList);
 
-    const totalSection = Math.ceil(totalList.length / (countPerPage * 10));
+    const totalSection = Math.ceil(totalPage / 10);
     setTotalSection(totalSection);
 
     setCurrentPage(1);
@@ -49,11 +48,17 @@ const usePagination = <T>(countPerPage: number) => {
 
     setView();
     setViewPage();
-  },[totalList])
-  //       effect: current page가 변경될 때 마다 실행 할 작업        //
-  useEffect(setView, [currentPage]);
-  //       effect: current section이 변경될 때 마다 실행 할 작업        //
-  useEffect(setViewPage, [currentPage]);
+  }, [totalList]);
+
+  //       effect: totalList, currentPage가 변경될 때 마다 실행 할 작업        //
+  useEffect(() => {
+    setView();
+  }, [totalList, currentPage]);
+
+  //       effect: totalPageList, currentSection이 변경될 때 마다 실행 할 작업        //
+  useEffect(() => {
+    setViewPage();
+  }, [totalPageList, currentSection]);
 
   return {
     currentPage,
@@ -63,7 +68,8 @@ const usePagination = <T>(countPerPage: number) => {
     viewList,
     viewPageList,
     totalSection,
-    setTotalList
+    setTotalList,
+    totalList // 추가된 부분
   };
 };
 

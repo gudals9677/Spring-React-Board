@@ -158,45 +158,67 @@ export default function Header() {
       }
       //         function: patch board response 처리 함수         //
       const patchBoardResponse = (responseBody: PatchBoardResponseDTO | ResponseDto | null) => {
-        if(!responseBody) return;
+        if (!responseBody) return;
         const { code } = responseBody;
-        if(code === 'DBE') alert('데이터베이스 오류입니다.');
-        if(code === 'AF' || code === 'NU' || code === 'NB' || code === 'NP')navigate(AUTH_PATH());
-        if(code === 'VF') alert('제목과 내용은 필수입니다.');
-        if(code !== 'SU') return;
-
-        if (!boardNumber) return;
-        navigate(BOARD_PATH() + '/' + BOARD_DETAIL_PATH(boardNumber));
-}
+        if (code === 'DBE') {
+          alert('데이터베이스 오류입니다.');
+        } else if (code === 'AF') {
+          alert('인증 실패. 다시 로그인해주세요.');
+          navigate(AUTH_PATH());
+        } else if (code === 'NU' || code === 'NB' || code === 'NP') {
+          navigate(AUTH_PATH());
+        } else if (code === 'VF') {
+          alert('제목과 내용은 필수입니다.');
+        } else if (code === 'SU') {
+          if (!boardNumber) return;
+          navigate(`${BOARD_PATH()}/${BOARD_DETAIL_PATH(boardNumber)}`);
+        } else {
+          // AF 코드 외의 인증 관련 문제에 대한 경고 메시지를 추가합니다.
+          alert('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
+        }
+      }
       
       //        event handler: 업로드 버튼 클릭 이벤트 처리 함수         //
       const onUploadButtonClickHandler = async () => {
         const accessToken = cookies.accessToken;
-        if(!accessToken) return;
-
+        if (!accessToken) {
+          alert('로그인이 필요합니다.');
+          navigate(AUTH_PATH());
+          return;
+        }
+      
         const boardImageList: string[] = [];
-
+      
         for (const file of boardImageFileList) {
           const data = new FormData();
-          data.append('file',file)
-
+          data.append('file', file);
+      
           const url = await fileUploadRequest(data);
           if (url) boardImageList.push(url);
         }
-
+      
         const isWriterPage = pathname === BOARD_PATH() + '/' + BOARD_WRITE_PATH();
-        if (isWriterPage){
+        if (isWriterPage) {
           const requestBody: PostBoardRequestDTO = {
             title, content, boardImageList
+          }
+          postBoardRequest(requestBody, accessToken).then(postBoardResponse);
+        } else {
+          if (!boardNumber) return;
+          const requestBody: PatchBoardRequestDTO = {
+            title, content, boardImageList
+          }
+      
+          // 요청 본문과 토큰을 로그로 출력하여 확인
+          console.log('Sending request with body:', requestBody);
+          console.log('Using accessToken:', accessToken);
+      
+          PatchBoardRequest(boardNumber, requestBody, accessToken).then(response => {
+            // 서버 응답을 로그로 출력하여 확인
+            console.log('Server response:', response);
+            patchBoardResponse(response);
+          });
         }
-        postBoardRequest(requestBody, accessToken).then(postBoardResponse);
-      } else {
-        if(!boardNumber) return;
-        const requestBody: PatchBoardRequestDTO = {
-          title, content, boardImageList
-        }
-        PatchBoardRequest(boardNumber, requestBody, accessToken).then(patchBoardResponse);
-      }
       };
 
       //        render: 업로드 버튼 컴포넌트 렌더링         //
@@ -227,6 +249,7 @@ export default function Header() {
    useEffect(() => {
     setLogin(loginUser !== null);
    }, [loginUser])
+   
 
   //        render: 헤더 레이아웃 렌더링       //
   return (
