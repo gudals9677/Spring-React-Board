@@ -19,6 +19,7 @@ import com.myproject.boardback.dto.response.board.GetBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.GetCommentListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetFavoriteListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetLatestBoardListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetSearchBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetTop3BoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.IncreaseViewCountResponseDTO;
 import com.myproject.boardback.dto.response.board.PatchBoardResponseDTO;
@@ -30,11 +31,13 @@ import com.myproject.boardback.entity.BoardListViewEntity;
 import com.myproject.boardback.entity.CommentEntity;
 import com.myproject.boardback.entity.FavoriteEntity;
 import com.myproject.boardback.entity.ImageEntity;
+import com.myproject.boardback.entity.SearchLogEntity;
 import com.myproject.boardback.repository.BoardListViewRepository;
 import com.myproject.boardback.repository.BoardRepository;
 import com.myproject.boardback.repository.CommentRepository;
 import com.myproject.boardback.repository.FavoriteRepository;
 import com.myproject.boardback.repository.ImageRepository;
+import com.myproject.boardback.repository.SearchLogRepository;
 import com.myproject.boardback.repository.UserRepository;
 import com.myproject.boardback.repository.resultSet.GetBoardResultSet;
 import com.myproject.boardback.repository.resultSet.GetCommentListResultSet;
@@ -50,6 +53,7 @@ public class BoardServiceImplement implements BoardService {
   private final UserRepository userRepository;
   private final BoardRepository boardRepository;
   private final BoardListViewRepository boardListViewRepository;
+  private final SearchLogRepository searchLogRepository;
   private final ImageRepository imageRepository;
   private final FavoriteRepository favoriteRepository;
   private final CommentRepository commentRepository;
@@ -143,6 +147,30 @@ public class BoardServiceImplement implements BoardService {
       return ResponseDto.databaseError();
     }
     return GetTop3BoardListResponseDTO.success(boardListViewEntities);
+  }
+
+  @Override
+  public ResponseEntity<? super GetSearchBoardListResponseDTO> getSearchBoardList(String searchWord, String preSearchWord) {
+    
+    List<BoardListViewEntity> boardListViewEntities = new ArrayList<>();
+    try{
+
+      boardListViewEntities = boardListViewRepository.findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(searchWord, searchWord);
+
+      SearchLogEntity searchLogEntity = new SearchLogEntity(searchWord, preSearchWord, false);
+      searchLogRepository.save(searchLogEntity);
+
+      boolean relation = preSearchWord != null;
+      if (relation) {
+        searchLogEntity = new SearchLogEntity(preSearchWord, searchWord, relation);
+        searchLogRepository.save(searchLogEntity);
+      }
+    }catch(Exception e){
+      e.printStackTrace();
+      return ResponseDto.databaseError();
+    }
+
+    return GetSearchBoardListResponseDTO.success(boardListViewEntities);
   }
 
   // 게시글 작성
@@ -250,7 +278,7 @@ public class BoardServiceImplement implements BoardService {
           if (boardEntity == null) return PatchBoardResponseDTO.noExistBoard();
 
           boolean existedUser = userRepository.existsByEmail(email);
-          if (existedUser) return PatchBoardResponseDTO.noExistUser();
+          if (!existedUser) return PatchBoardResponseDTO.noExistUser();
 
           String writerEmail = boardEntity.getWriterEmail();
           boolean isWriter = writerEmail.equals(email);
@@ -320,6 +348,4 @@ public class BoardServiceImplement implements BoardService {
     }
     return DeleteBoardResponseDTO.success();
   }
-
-
 }

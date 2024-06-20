@@ -20,6 +20,7 @@ import com.myproject.boardback.dto.response.board.GetBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.GetCommentListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetFavoriteListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetLatestBoardListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetSearchBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetTop3BoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.IncreaseViewCountResponseDTO;
 import com.myproject.boardback.dto.response.board.PatchBoardResponseDTO;
@@ -85,6 +86,15 @@ public class BoardController {
     ResponseEntity<? super GetTop3BoardListResponseDTO> response = boardService.getTop3BoardList();
     return response;
   }
+  // 검색 게시글 조회
+  @GetMapping(value={"/search-list/{searchWord}", "/search-list/{searchWord}/{preSearchWord}"})
+  public ResponseEntity<? super GetSearchBoardListResponseDTO> getSearchBoardList(
+    @PathVariable("searchWord") String searchWord,
+    @PathVariable(value = "preSearchWord", required = false) String preSearchWord){
+      
+      ResponseEntity<? super GetSearchBoardListResponseDTO> response = boardService.getSearchBoardList(searchWord, preSearchWord);
+      return response;
+    }
 
   // 게시글 작성
   @PostMapping("")

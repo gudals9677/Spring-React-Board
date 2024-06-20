@@ -14,18 +14,17 @@ import com.myproject.boardback.entity.BoardListViewEntity;
 import lombok.Getter;
 
 @Getter
-public class GetLatestBoardListResponseDTO extends ResponseDto{
+public class GetSearchBoardListResponseDTO extends ResponseDto {
+  
+  private List<BoardListItem> searchList;
 
-  private List<BoardListItem> latestList;
-
-  private GetLatestBoardListResponseDTO(List<BoardListViewEntity> boardEntities) {
+  private GetSearchBoardListResponseDTO(List<BoardListViewEntity> boardListViewEntities) {
     super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
-    this.latestList = BoardListItem.getList(boardEntities);
+    this.searchList = BoardListItem.getList(boardListViewEntities);
   }
 
-  public static ResponseEntity<GetLatestBoardListResponseDTO> success(List<BoardListViewEntity> boardEntities) {
-    GetLatestBoardListResponseDTO result = new GetLatestBoardListResponseDTO(boardEntities);
+  public static ResponseEntity<GetSearchBoardListResponseDTO> success(List<BoardListViewEntity> boardListViewEntities) {
+    GetSearchBoardListResponseDTO result = new GetSearchBoardListResponseDTO(boardListViewEntities);
     return ResponseEntity.status(HttpStatus.OK).body(result);
   }
-  
 }
