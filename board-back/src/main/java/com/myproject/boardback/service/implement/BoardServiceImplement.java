@@ -21,6 +21,7 @@ import com.myproject.boardback.dto.response.board.GetFavoriteListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetLatestBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetSearchBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetTop3BoardListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetUserBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.IncreaseViewCountResponseDTO;
 import com.myproject.boardback.dto.response.board.PatchBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.PostBoardResponseDTO;
@@ -171,6 +172,25 @@ public class BoardServiceImplement implements BoardService {
     }
 
     return GetSearchBoardListResponseDTO.success(boardListViewEntities);
+  }
+
+  @Override
+  public ResponseEntity<? super GetUserBoardListResponseDTO> getUserBoardList(String email) {
+   
+    List<BoardListViewEntity> boardListViewEntities = new ArrayList<>();
+
+    try {
+
+      boolean existedUser = userRepository.existsByEmail(email);
+      if (!existedUser) return GetUserBoardListResponseDTO.noExistUser();
+
+      boardListViewEntities = boardListViewRepository.findByWriterEmailOrderByWriteDatetimeDesc(email);
+
+    }catch(Exception e){
+      e.printStackTrace();
+      return ResponseDto.databaseError();
+    }
+    return GetUserBoardListResponseDTO.success(boardListViewEntities);
   }
 
   // 게시글 작성

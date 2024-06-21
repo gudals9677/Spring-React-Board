@@ -22,6 +22,7 @@ import com.myproject.boardback.dto.response.board.GetFavoriteListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetLatestBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetSearchBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.GetTop3BoardListResponseDTO;
+import com.myproject.boardback.dto.response.board.GetUserBoardListResponseDTO;
 import com.myproject.boardback.dto.response.board.IncreaseViewCountResponseDTO;
 import com.myproject.boardback.dto.response.board.PatchBoardResponseDTO;
 import com.myproject.boardback.dto.response.board.PostBoardResponseDTO;
@@ -95,6 +96,15 @@ public class BoardController {
       ResponseEntity<? super GetSearchBoardListResponseDTO> response = boardService.getSearchBoardList(searchWord, preSearchWord);
       return response;
     }
+
+  // 유저 게시물 조회
+  @GetMapping("/user-board-list/{email}")
+  public ResponseEntity<? super GetUserBoardListResponseDTO> getUserBaordList(
+    @PathVariable("email") String email
+  ){
+    ResponseEntity<? super GetUserBoardListResponseDTO> response = boardService.getUserBoardList(email);
+    return response;
+  }
 
   // 게시글 작성
   @PostMapping("")
