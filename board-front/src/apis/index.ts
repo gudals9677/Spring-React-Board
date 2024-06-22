@@ -3,10 +3,11 @@ import { SignInReqeustDTO, SignUpRequestDto } from "./request/auth";
 import { SignInResponseDTO, SignUpResponseDto } from "./response/auth";
 import { ResponseDto } from "./response";
 import { error } from "console";
-import { GetSignInUserResponseDTO } from "./response/user";
+import { GetSignInUserResponseDTO, GetUserResponseDTO, PatchNicknameResponseDTO, PatchProfileImageResponseDTO } from "./response/user";
 import { PatchBoardRequestDTO, PostBoardRequestDTO, PostCommentRequestDTO } from "./request/board";
-import { PostBoardResponseDTO, GetBoardResponseDTO, IncreaseViewCountResponseDTO, GetFavoriteListResponseDTO, GetCommentListResponseDTO, PutFavoriteResponseDTO, PostCommentResponseDTO, DeleteBoardResponseDTO, PatchBoardResponseDTO, GetLatestBoardListResponseDTO, GetTop3BoardListResponseDTO, GetSearchBoardListResponseDTO } from "./response/board";
+import { PostBoardResponseDTO, GetBoardResponseDTO, IncreaseViewCountResponseDTO, GetFavoriteListResponseDTO, GetCommentListResponseDTO, PutFavoriteResponseDTO, PostCommentResponseDTO, DeleteBoardResponseDTO, PatchBoardResponseDTO, GetLatestBoardListResponseDTO, GetTop3BoardListResponseDTO, GetSearchBoardListResponseDTO, GetUserBoardListResponseDTO } from "./response/board";
 import { GetPopularListResponseDTO, GetRelationListResponseDTO } from "./response/search";
+import { PatchNicknameRequestDTO, PatchProfileImageRequestDTO } from "./request/user";
 
 const DOMAIN = 'http://localhost:4000';
 
@@ -50,6 +51,7 @@ const GET_BOARD_URL = (boardNumber: number | string) => `${API_DOMAIN}/board/${b
 const GET_LATEST_BOARD_LIST_URL = () => `${API_DOMAIN}/board/latest-list`;
 const GET_TOP_3_BOARD_LIST_URL = () =>  `${API_DOMAIN}/board/top-3`;
 const GET_SEARCH_BOARD_LIST_URL = (searchWord: string, preSearchWord: string | null) => `${API_DOMAIN}/board/search-list/${searchWord}${preSearchWord ? '/' + preSearchWord : ''}`;
+const GET_USER_BOARD_LIST_URL = (email: string) => `${API_DOMAIN}/board/user-board-list/${email}`;
 const INCREASE_VIEW_COUNT_URL = (boardNumber: number | string) => `${API_DOMAIN}/board/${boardNumber}/increase-view-count`;
 const GET_FAVORITE_LIST_URL = (boardNumber: number | string) => `${API_DOMAIN}/board/${boardNumber}/favorite-list`;
 const GET_COMMENT_LIST_URL = (boardNumber: number | string) => `${API_DOMAIN}/board/${boardNumber}/comment-list`;
@@ -115,6 +117,20 @@ export const getSearchBoardListRequest = async(searchWord: string, preSearchWord
   });
   return result;
 };
+
+export const getUserBoardListRequest = async (email:string) => {
+  const result = await axios.get(GET_USER_BOARD_LIST_URL(email))
+  .then(response => {
+    const responseBody: GetUserBoardListResponseDTO = response.data;
+    return responseBody;
+  })
+  .catch(error => {
+    if(!error.response) return null;
+    const responseBody: ResponseDto = error.response.data;
+    return responseBody;
+  });
+  return result;
+}
 
 export const getCommentListRequest = async (boardNumber: number | string) => {
   const result = await axios.get(GET_COMMENT_LIST_URL(boardNumber))
@@ -267,12 +283,57 @@ export const getRelationListRequest = async(searchWord: string) => {
   return result;
 }
 
+const GET_USER_URL = (email: string) => `${API_DOMAIN}/user/${email}`;
 const GET_SIGN_IN_USER_URL = () => `${API_DOMAIN}/user`;
+const PATCH_NICKNAME_URL = () => `${API_DOMAIN}/user/nickname`;
+const PATCH_PROFILE_IMAGE_URL = () => `${API_DOMAIN}/user/profile-image`;
+
+export const getUserRequest = async (email: string) => {
+  const result = await axios.get(GET_USER_URL(email))
+    .then(response => {
+      const responseBody: GetUserResponseDTO = response.data;
+      return responseBody;
+    })
+    .catch(error => {
+      if(!error.response) return null;
+      const responseBody: ResponseDto = error.response.data;
+      return responseBody;
+    });
+  return result;
+}
 
 export const getSignInUserReqeust = async (accessToken: string) => {
   const result = await axios.get(GET_SIGN_IN_USER_URL(), authorization(accessToken))
     .then(response => {
       const responseBody: GetSignInUserResponseDTO = response.data;
+      return responseBody;
+    })
+    .catch(error => {
+      if(!error.response) return null;
+      const responseBody: ResponseDto = error.response.data;
+      return responseBody;
+    });
+  return result;
+}
+
+export const patchNicknameRequest = async (requestBody: PatchNicknameRequestDTO, accessToken: string) => {
+  const result = await axios.patch(PATCH_NICKNAME_URL(), requestBody, authorization(accessToken))
+    .then(response => {
+      const responseBody: PatchNicknameResponseDTO = response.data;
+      return responseBody;
+    })
+    .catch(error => {
+      if(!error.response) return null;
+      const responseBody: ResponseDto = error.response.data;
+      return responseBody;
+    });
+  return result;
+}
+
+export const patchProfileImageRequest = async (requestBody: PatchProfileImageRequestDTO, accessToken: string) => {
+  const result = await axios.patch(PATCH_PROFILE_IMAGE_URL(), requestBody, authorization(accessToken))
+    .then(response => {
+      const responseBody: PatchProfileImageResponseDTO = response.data;
       return responseBody;
     })
     .catch(error => {

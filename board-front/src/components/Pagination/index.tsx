@@ -28,12 +28,14 @@ export default function Pagination(props: Props) {
     if (currentSection === 1) return;
     setCurrentPage((currentSection - 1) * 10);
     setCurrentSection(currentSection - 1);
+    console.log(`Current Section: ${currentSection - 1}, Current Page: ${(currentSection - 1) * 10}`);
   }
   //        event handler: 다음 클릭 이벤트 처리         //
   const onNextClickHandler = () => {
     if(currentSection === totalSection) return;
     setCurrentPage(currentSection * 10 + 1);
     setCurrentSection(currentSection + 1);
+    console.log(`Current Section: ${currentSection + 1}, Current Page: ${currentSection * 10 + 1}`);
   }
 
   //        render: 페이지네이션 컴포넌트 렌더링          //
